@@ -10,12 +10,16 @@ use Slim\Psr7\Response;
 use Slim\Views\Twig;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DirectoryController
 {
     /** @var Config The application configuration */
     protected $config;
+
+    /** @var CacheInterface The application cache */
+    protected $cache;
 
     /** @var Finder File finder component */
     protected $finder;
@@ -29,16 +33,18 @@ class DirectoryController
     /** Create a new IndexController object. */
     public function __construct(
         Config $config,
+        CacheInterface $cache,
         Finder $finder,
         Twig $view,
         TranslatorInterface $translator
     ) {
         $this->config = $config;
+        $this->cache = $cache;
         $this->finder = $finder;
         $this->view = $view;
         $this->translator = $translator;
     }
-
+	
     /** Invoke the IndexController. */
     public function __invoke(Request $request, Response $response): ResponseInterface
     {
@@ -50,14 +56,22 @@ class DirectoryController
             return $this->view->render($response->withStatus(404), 'error.twig', [
                 'message' => $this->translator->trans('error.directory_not_found'),
             ]);
-        }
-
-        return $this->view->render($response, 'index.twig', [
-            'files' => $files,
-            'path' => $path,
-            'readme' => $this->readme($files),
-            'title' => $path == '.' ? 'Home' : $path,
-        ]);
+        }		
+		
+        if ($this->config->get('cache_fileindex')) {
+			$responseBody = json_decode($this->cache->get(
+				sprintf('file-index-%s', sha1($path)),
+				function () use ($path, $files, $response): string {
+					return json_encode($this->getIndexAsHtml($path, $files, $response));
+				}
+			));
+		} else {
+			$responseBody = $this->getIndexAsHtml($path, $files, $response);
+		}
+				
+		$response->getBody()->write($responseBody);
+		
+		return $response;
     }
 
     /** Return the README file within a finder object. */
@@ -81,4 +95,15 @@ class DirectoryController
 
         return $readmes->getIterator()->current();
     }
+	
+	private function getIndexAsHtml($path, $files, $response): string {
+		$renderedResponse = $this->view->fetch('index.twig', [
+			'files' => $files,
+			'path' => $path,
+			'readme' => $this->readme($files),
+			'title' => $path == '.' ? 'Home' : $path,
+		]);
+
+		return $renderedResponse;
+	}
 }

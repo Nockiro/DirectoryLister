@@ -29,6 +29,11 @@ return [
      * Default value: 2
      */
     'cache_lottery' => DI\env('CACHE_LOTTERY', 2),
+	
+	/**
+	 * If true, the index of every path will be stored in the app cache.
+	 */
+	'cache_fileindex' => DI\env('CACHE_FILEINDEX', false),
 
     /**
      * Path to the view cache directory. Set to 'false' to disable
