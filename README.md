@@ -38,7 +38,7 @@ Features
 Requirements
 ------------
 
-  - Directory Lister requires [PHP](https://www.php.net/) >= 7.2
+  - Directory Lister requires [PHP](https://www.php.net/) >= 7.4
     - The [Zip](https://www.php.net/manual/en/book.zip.php) extension is required for zip downloads
     - The [DOM](https://www.php.net/en/dom) and [Fileinfo](https://www.php.net/manual/en/book.fileinfo.php) extensions are required for README rendering
 
@@ -60,7 +60,8 @@ See the [Configuration Documentation](https://docs.directorylister.com/configura
 Sponsors
 --------
 
-<a href="https://besturate.com"><img src="https://i.imgur.com/fUKxT63.png" alt="Besturate" height="100" style="height: 100px;"></a>
+Love Directory Lister? [Sponsor development](https://github.com/sponsors/PHLAK)
+and have your name or logo featured here!
 
 Changelog
 ---------
